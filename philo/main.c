@@ -116,14 +116,14 @@ int	main(int argc, char *argv[])
 
 	memset(&var, 0, sizeof(t_philo));
 	if (argc < 5 || argc > 6)
-		return (printf("Incorrect arguments, please input 5 or 6.\n"));
+		return (printf("\e[91mIncorrect arguments, please input 5 or 6.\n"));
 	if (init_params(&var, argc, argv) == 0)
 	{
-		printf("Incorrect par\n");
+		printf("\e[91mIncorrect argc\n");
 		return (1);
 	}
 	if (process_philo(&var) < 0)
-		return (printf("Malloc error\n"));
+		return (printf("\e[91mMalloc error\n"));
 	philo_start_threads(&var);
 	clear_state(&var);
 	return (0);

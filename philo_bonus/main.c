@@ -62,7 +62,7 @@ void	*check_status(void	*args)
    When info->full == 0 = ate required amount of time
 **/
 
-void	init_params(t_philo *info, int argc, char *argv[])
+int	init_params(t_philo *info, int argc, char *argv[])
 {
 	info->n_ph = ft_atoi(argv[1]);
 	info->time_to_die = ft_atoi(argv[2]);
@@ -74,14 +74,16 @@ void	init_params(t_philo *info, int argc, char *argv[])
 		info->num_eat = ft_atoi(argv[5]);
 	else
 		info->num_eat = 0;
-	if ((info->n_ph < 2 || info->n_ph > 200 || info->time_to_die < 60
+	if ((info->n_ph < 0 || info->n_ph >= 200 || info->time_to_die < 60
 			|| info->time_to_eat < 60 || info->time_to_sleep < 60
 			|| info->num_eat < 0))
+		return (0);
 	info->full = 0;
 	info->forks = "fork";
 	info->death = "done";
 	info->datas = "msg";
 	info->counts = "info";
+	return (1);
 }
 
 /**
@@ -93,13 +95,17 @@ int	main(int argc, char *argv[])
 
 	if (argc < 5 || argc > 6)
 	{
-		printf("%d Incorrect arguments, please input 5 or 6.\n", (argc - 1));
+		printf("%dIncorrect arguments, please input 5 or 6.\n", (argc - 1));
 		return (0);
 	}
 	var = malloc(sizeof(t_philo));
 	if (!var)
 		return (0);
-	init_params(var, argc, argv);
+	if (init_params(var, argc, argv) == 0)
+	{
+		printf("\e[91mError argc. \n");
+		return (1);
+	}
 	process_philo(var);
 	philo_start_threads(var);
 	sem_wait(var->end);

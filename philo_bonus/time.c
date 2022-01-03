@@ -23,7 +23,7 @@ int	get_time(void)
 void	philo_printf(bool status, char *message, t_var *ph)
 {
 	sem_wait(ph->info->msg);
-	printf("\033[32m%ld ms\t \033[0;37mPhilo [%d] %s\n", get_time() \
+	printf("\033[32m%lld ms\t \033[0;37mPhilo [%d] %s\n", get_time() \
 	- ph->info->start_time, ph->thread_num + 1, message);
 	if (status == 1)
 		return ;

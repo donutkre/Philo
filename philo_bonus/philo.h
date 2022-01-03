@@ -45,7 +45,7 @@
 
 typedef struct s_var
 {
-	int64_t				talking;
+	intmax_t			talking;
 	struct s_philo		*info;
 	int					thread_num;
 	int					countime_to_eat;
@@ -53,7 +53,7 @@ typedef struct s_var
 	int					right;
 	pid_t				philo_time;
 	int					param;
-	int64_t				lastime_to_eat;
+	intmax_t			lastime_to_eat;
 	sem_t				*mt;
 	sem_t				*mtime_to_eat;
 }			t_var;
@@ -61,9 +61,9 @@ typedef struct s_var
 typedef struct s_philo
 {
 	int				n_ph;
-	int64_t			time_to_die;
-	int64_t			time_to_eat;
-	int64_t			time_to_sleep;
+	intmax_t		time_to_die;
+	intmax_t		time_to_eat;
+	intmax_t		time_to_sleep;
 	int				num_eat;
 	t_var			*phil;
 	sem_t			*fork;
