@@ -6,58 +6,93 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:15:12 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:16:54 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:01:00 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	*pre_start(void *args)
+void	*philo_full_check(void *arg)
 {
-	t_var		*var;
-	pthread_t	threads;
+	t_philo	*ph;
+	int		i;
 
-	var = (t_var *)args;
-	var->lastime_to_eat = get_time();
-	var->talking = var->lastime_to_eat + var->info->time_to_die;
-	if (pthread_create(&threads, 0, check_status, args) != 0)
-		return ((void *)1);
-	pthread_detach(threads);
-	while (42)
-		philo_routine(var);
+	ph = (t_philo *)arg;
+	i = 0;
+	while (i++ < ph->n_ph)
+		sem_wait(ph->full);
+	sem_post(ph->death);
 	return (0);
 }
 
-/**
-   Launch each philo's thread, 
-   if everyone ate the required amount of rounds,
-   display everyone is full.
-**/
-
-int	philo_start_threads(t_philo *var)
+void	philo_full(t_philo *ph)
 {
-	pthread_t	threads;
-	int			i;
+	int	i;
 
 	i = 0;
-	if (var->num_eat > 0)
+	sem_wait(ph->death);
+	while (i < ph->n_ph)
 	{
-		pthread_create(&threads, 0, philo_full, (void *)var);
-		pthread_detach(threads);
-	}
-	var->start_time = get_time();
-	while (i < var->n_ph)
-	{
-		var->phil[i].philo_time = fork();
-		if (var->phil[i].philo_time < 0)
-			return (0);
-		if (var->phil[i].philo_time == 0)
-		{
-			pre_start(&var->phil[i]);
-			exit (0);
-		}
-		usleep(100);
+		sem_post(ph->full);
 		i++;
 	}
+}
+
+int	clear_state(t_philo *ph)
+{
+	sem_close(ph->m_fork);
+	sem_close(ph->mt);
+	sem_close(ph->full);
+	sem_close(ph->death);
+	sem_unlink("m_fork");
+	sem_unlink("mt");
+	sem_unlink("finished");
+	sem_unlink("dead");
+	free(ph);
 	return (0);
+}
+
+int	philo_start_threads(t_philo *ph)
+{
+	pthread_t	start;
+	pthread_t	done;
+
+	if (pthread_create(&start, 0, &pre_start_thread, ph))
+		return (clear_state(ph));
+	pthread_join(start, 0);
+	if (pthread_create(&done, 0, &philo_full_check, ph))
+		return (clear_state(ph));
+	philo_full(ph);
+	pthread_join(done, 0);
+	clear_state(ph);
+	kill(0, 2);
+	return (0);
+}
+
+sem_t	*ft_sem_open(char *name, int num)
+{
+	sem_unlink(name);
+	return (sem_open(name, O_CREAT | O_EXCL, 0660, num));
+}
+
+int	philo_sem(t_philo *ph)
+{
+	int		i;
+	t_philo	p;
+
+	i = -1;
+	p.sem_fork = ft_sem_open("m_fork", ph->n_ph);
+	p.sem_message = ft_sem_open("write", 1);
+	p.sem_full = ft_sem_open("finished", 0);
+	p.sem_dead = ft_sem_open("dead", 0);
+	while (++i < ph->n_ph)
+	{
+		ph[i].start = get_time(0);
+		ph[i].num_meal = 0;
+		ph[i].full = p.sem_full;
+		ph[i].death = p.sem_dead;
+		ph[i].mt = p.sem_message;
+		ph[i].m_fork = p.sem_fork;
+	}
+	return (philo_start_threads(ph));
 }

@@ -13,6 +13,17 @@
 #include <limits.h>
 #include "philo.h"
 
+int	ft_putendl_fd(char *s, int fd)
+{
+	if (!s)
+		return (0);
+	printf(s, fd);
+	if (fd == 2)
+		return (-1);
+	else
+		return (1);
+}
+
 static int	value(int n)
 {
 	if (n == -1)
@@ -36,7 +47,7 @@ int	ft_isdigit(int c)
 		return (0);
 }
 
-int	ft_atoi(const char *thread_num)
+int	ft_atoi(const char *c)
 {
 	int		sign;
 	int		i;
@@ -46,17 +57,17 @@ int	ft_atoi(const char *thread_num)
 	i = 0;
 	num = 0;
 	sign = 1;
-	while (ft_isspace(thread_num[i]) == 1)
+	while (ft_isspace(c[i]) == 1)
 		i++;
-	if (thread_num[i] == '+' || thread_num[i] == '-')
-		if (thread_num[i++] == '-')
+	if (c[i] == '+' || c[i] == '-')
+		if (c[i++] == '-')
 			sign = -1;
 	max = LONG_MAX / 10;
-	while (ft_isdigit(thread_num[i]) == 1)
+	while (ft_isdigit(c[i]) == 1)
 	{
 		if (num > max)
 			return (value(sign));
-		num = (num * 10) + (thread_num[i] - '0');
+		num = (num * 10) + (c[i] - '0');
 		if (num < 0)
 			return (value(sign));
 		i++;

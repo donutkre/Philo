@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/29 16:55:15 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:18:15 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:25:33 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,30 +15,64 @@
 /**
 	This function creates a mutex for every fork and assigns 2 forks
 	to every philosopher.
-	When data->full = 0 all philos ate required amount of time.
+    allocate memory for an array of forks (mutexes);
+    initialize mutex forks (pthread_mutex_init) according to
+    the number of philosophers
+	assign initial values ​​to the variables of the philosopher's object;
+	write mutex initialization (controls access to status output);
+	initialization of the death mutex (controls access to the death check);
+	call the function that initializes the forks;
+	call the function that initializes the philosophers;
+	allocate memory for the threads array;
 **/
 
-int	process_philo(t_philo *var)
+int	process_philo(t_philo *ph, pthread_mutex_t m_speak)
+{
+	int				i;
+	pthread_mutex_t	*m_fork;
+
+	m_fork = malloc(sizeof(pthread_mutex_t) * ph->n_ph);
+	if (!m_fork)
+		return (ERR_MALLOC);
+	i = 0;
+	while (i < ph->n_ph)
+	{
+		if (pthread_mutex_init(&m_fork[i], 0))
+		{
+			while (i--)
+				pthread_mutex_destroy(&m_fork[i]);
+			return (ERR_MUTEX);
+		}
+		i++;
+	}
+	while (i--)
+	{
+		ph[i].mt = &m_speak;
+		ph[i].m_fork = m_fork;
+	}
+	return (philo_start_threads(ph));
+}
+
+int	main_process(t_philo *ph)
+{
+	pthread_mutex_t	write;
+
+	if (pthread_mutex_init(&write, 0))
+		return (0);
+	return (process_philo(ph, write));
+}
+
+void	check_end(t_philo *ph, int *died, int *full)
 {
 	int	i;
 
-	var->phil = malloc(sizeof(t_var) * var->n_ph);
-	var->m_fork = malloc(sizeof(pthread_mutex_t) * var->n_ph);
-	if (!var->phil || !var->m_fork || (pthread_mutex_init(&(var->m_speak), 0)))
-		return (-1);
 	i = 0;
-	while (i < var->n_ph)
+	*died = 0;
+	*full = 0;
+	while (i < ph->n_ph)
 	{
-		if (pthread_mutex_init(&(var->m_fork[i]), 0))
-			return (-1);
-		if (pthread_mutex_init(&(var->phil[i].mt), 0))
-			return (-1);
-		var->phil[i].state = var;
-		var->phil[i].thread_num = i;
-		var->phil[i].num_meal = 0;
-		var->phil[i].left = i;
-		var->phil[i].right = (i + 1) % var->n_ph;
+		ph[i].died = died;
+		ph[i].full = full;
 		i++;
 	}
-	return (0);
 }

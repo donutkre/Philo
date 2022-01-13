@@ -6,78 +6,104 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 03:38:39 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:18:47 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:31:14 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
 /*
-
-   	Delay odd philo, even goes first.s
-	Checks if total number of philosophers is even or odd.
-	Make even or odd philo a delay, if all philo start at the same time,
-	and take their right fork, no one will be able to eat,
-	and they will all die.
-	If there is no max round declared,
-	the while loop will be in infinite loop (eat, sleep, think)
+	Prints death message
 */
-void	*start_philo(void *var)
-{
-	t_var	*ph;
-	int		th_num;
 
-	ph = (t_var *)var;
-	if (!(ph->thread_num % 2))
-		usleep(1000 * ph->state->t_eat);
-	while (!ph->state->full)
-	{
-		philo_eat(ph);
-		if (ph->state->num_eat != -1 && philo_full(ph) < 0)
-			break ;
-		philo_printf(FALSE, GREEN SLEEP, ph);
-		th_num = get_time();
-		while (!ph->state->full && \
-		get_time() - th_num <= ph->state->t_sleep)
-			usleep(1000);
-		if (ph->state->full)
-			break ;
-		philo_printf(FALSE, PURPLE THINK, ph);
-	}
-	return (0);
+void	death_message(int s, int philo, char *message, t_philo *ph)
+{
+	s = get_time(ph->start_philo);
+	printf("\033[32m%d ms\t \033[0;37mPhilo [%d] %s\n",
+		s, philo, message);
+	pthread_mutex_unlock(ph->mt);
 }
 
 /*
+	This function checks if philo will die during
+	next round and inform next death time.
+	The simulation stops as soon as one philo dies.
+	Checks if any Philo die, return death message.
+	Check for death in a side-by-side thread.
+	Also checks if philo ate enough times. if yes, exit.
+
+
+	get_time(ph->start_philo) - ph[i].num_meal
+	from the current time we subtract the timestamp at the moment of the last
+	eating thus getting the amount of time that the philosopher
+	remained without food and then compare with the input parameter of the valid
+	time to death; if the elapsed time without food is more than indicated
+	in the argument, then we end the program
+*/
+
+void	check_status(t_philo *ph)
+{
+	int	i;
+
+	i = 0;
+	while (ERR_DEAD)
+	{
+		if (get_time(ph->start_philo) - ph[i].num_meal > ph[i].t_die
+			&& ph[i].num_eat)
+		{
+			death_message(0, ph[i].thread_num, RED DEAD, ph);
+			*ph->died = 1;
+			i = 0;
+			while (i < ph->n_ph)
+				pthread_mutex_unlock(&ph->m_fork[i++]);
+			break ;
+		}
+		if (*ph->full == ph->n_ph)
+			break ;
+		i++;
+		if (i == ph->n_ph)
+		{
+			i = 0;
+			usleep(500);
+		}
+	}
+}
+
+/*** declare an array of structures-references to structures, allocate memory;
+	initiate program time (get_time());
+	in the first loop, we assign values ​​to each of the reference structures;
+	in the same place we create threads (pthread_create) with access to the life function;
+	in the second loop, we wait for the completion of threads using the pthread_join function;
 	Create the philo here.
 	philo_start_threads will launch each philo's thread and join em.
 	Checks if philo has died or has eaten enough time, if yes, display output.
 */
 
-int	philo_start_threads(void *arg)
+int	philo_start_threads(t_philo *var)
 {
-	pthread_t	threads;
-	t_philo		*var;
+	pthread_t	*threads;
 	int			i;
 
 	i = 0;
-	var = (t_philo *) arg;
-	var->time = get_time();
+	threads = malloc(sizeof(pthread_t) * var->n_ph);
+	if (!threads)
+		return (ERR_THREAD);
 	while (i < var->n_ph)
 	{
-		var->phil[i].start = get_time();
-		if (pthread_create(&threads, NULL, start_philo, &(var->phil[i])))
-			return (EXIT_FAILURE);
-		pthread_detach(threads);
-		if (pthread_create(&(var->phil[i].tid), \
-		NULL, check_status, &(var->phil[i])))
-			return (EXIT_FAILURE);
+		if (pthread_create(&threads[i], 0, &routine, &var[i]))
+		{
+			while (i--)
+				pthread_join(threads[i], 0);
+			free(threads);
+			return (ERR_THREAD);
+		}
+		usleep(100);
 		i++;
 	}
-	i = 0;
-	while (i < var->n_ph)
-	{
-		pthread_join(var->phil[i].tid, 0);
-		i++;
-	}
-	return (1);
+	check_status(var);
+	usleep(1000);
+	while (i--)
+		pthread_join(threads[i], 0);
+	free(threads);
+	return (clear_state(var, ERR_THREAD));
 }

@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:14:57 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:15:31 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:00:08 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,97 +17,91 @@
 
 #include "philo.h"
 
-void	*philo_full(void *args)
+void	*check_status(void *arg)
 {
 	t_philo	*ph;
-	int		i;
 
-	ph = (t_philo *)args;
-	i = -1;
-	while (++i < ph->n_ph)
-		sem_wait(ph->lock);
-	philo_printf(TRUE, GREEN DONE, ph->phil);
-	sem_post(ph->phil->mt);
-	sem_post(ph->end);
+	ph = (t_philo *)arg;
+	while (1)
+	{
+		if (*ph->died)
+			break ;
+		if (get_time(ph->start) - ph->num_meal > ph->t_die)
+		{
+			*ph->died = 1;
+			philo_printf(get_time(ph->start), RED DEAD, ph);
+			sem_post(ph->death);
+			break ;
+		}
+		usleep(500);
+	}
 	return (0);
 }
 
-/**
-   if someone dies, display console message
-**/
-
-void	*check_status(void	*args)
+int	check_info(int argc, char *argv[])
 {
-	t_var		*ph;
-	int64_t		time;
-
-	ph = (t_var *)args;
-	while (42)
-	{
-		sem_wait(ph->mt);
-		time = get_time();
-		if (!ph->countime_to_eat && time > ph->talking)
-		{
-			philo_printf(TRUE, RED DEAD, ph);
-			sem_post(ph->mt);
-			sem_post(ph->info->end);
-		}
-		sem_post(ph->mt);
-		usleep(1000);
-	}
-}
-
-/**
-
-   When info->full == 0 = ate required amount of time
-**/
-
-int	init_params(t_philo *info, int argc, char *argv[])
-{
-	info->n_ph = ft_atoi(argv[1]);
-	info->time_to_die = ft_atoi(argv[2]);
-	info->time_to_eat = ft_atoi(argv[3]);
-	info->time_to_sleep = ft_atoi(argv[4]);
 	if (argc < 5 || argc > 6)
-		printf("%d Incorrect arguments, please input 5 or 6.\n", (argc - 1));
-	if (argv[5])
-		info->num_eat = ft_atoi(argv[5]);
-	else
-		info->num_eat = 0;
-	if ((info->n_ph < 0 || info->n_ph >= 200 || info->time_to_die < 60
-			|| info->time_to_eat < 60 || info->time_to_sleep < 60
-			|| info->num_eat < 0))
-		return (0);
-	info->full = 0;
-	info->forks = "fork";
-	info->death = "done";
-	info->datas = "msg";
-	info->counts = "info";
+		return (ft_putendl_fd(RED"Error : bad arguments.\n", 2));
+	if (ft_atoi(argv[1]) <= 0 || ft_atoi(argv[1]) > 200)
+		return (ft_putendl_fd(RED"Error : Wrong number of philosopher\n", 2));
+	if (ft_atoi(argv[2]) < 60)
+		return (ft_putendl_fd(RED"Error : Wrong number : time to die\n", 2));
+	if (ft_atoi(argv[3]) < 60)
+		return (ft_putendl_fd(RED"Error : Wrong number : time to eat\n", 2));
+	if (ft_atoi(argv[4]) < 60)
+		return (ft_putendl_fd(RED"Error : Wrong number : time to sleep\n", 2));
+	if (argc == 6 && ft_atoi(argv[5]) <= 0)
+		return (ft_putendl_fd(RED"Error : Wrong number of meals\n", 2));
 	return (1);
 }
 
-/**
-   Check error/argc parsing and start threads.
-**/
+t_philo	*init_params(int argc, char *argv[], t_philo *ph, int *status)
+{
+	int		i;
+
+	i = -1;
+	while (++i < ft_atoi(argv[1]))
+	{
+		ph[i].n_ph = ft_atoi(argv[1]);
+		ph[i].t_die = ft_atoi(argv[2]);
+		ph[i].t_eat = ft_atoi(argv[3]);
+		ph[i].t_sleep = ft_atoi(argv[4]);
+		if (argc == 6)
+			ph[i].num_eat = ft_atoi(argv[5]);
+		else
+			ph[i].num_eat = -1;
+		ph[i].thread_num = i + 1;
+		*status = 0;
+		ph[i].died = status;
+	}
+	return (ph);
+}
+
+t_philo	*create_philo(int argc, char *argv[], int *died)
+{
+	t_philo	*ph;
+
+	ph = malloc(sizeof(t_philo) * ft_atoi(argv[1]));
+	if (!ph)
+		return (0);
+	// sem_unlink("m_fork");
+	// sem_unlink("write");
+	// sem_unlink("finished");
+	// sem_unlink("dead");
+	ph = init_params(argc, argv, ph, died);
+	return (ph);
+}
+
 int	main(int argc, char *argv[])
 {
-	t_philo	*var;
+	t_philo		*ph;
+	int			full;
 
-	if (argc < 5 || argc > 6)
-	{
-		printf("%dIncorrect arguments, please input 5 or 6.\n", (argc - 1));
+	if (check_info(argc, argv) == -1)
 		return (0);
-	}
-	var = malloc(sizeof(t_philo));
-	if (!var)
+	ph = create_philo(argc, argv, &full);
+	if (!ph)
 		return (0);
-	if (init_params(var, argc, argv) == 0)
-	{
-		printf("\e[91mError argc. \n");
-		return (1);
-	}
-	process_philo(var);
-	philo_start_threads(var);
-	sem_wait(var->end);
-	return (0);
+	philo_sem(ph);
+	free(ph);
 }

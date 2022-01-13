@@ -6,26 +6,36 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:16:33 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:17:03 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:01:08 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	get_time(void)
+int	thread_create_detach(pthread_t *thread, void *func, void *arg)
 {
-	struct timeval	current;
-
-	gettimeofday(&current, 0);
-	return ((int)(((current.tv_sec) * 1000) + ((current.tv_usec) / 1000)));
+	if (pthread_create(thread, NULL, func, arg))
+		return (-1);
+	pthread_detach(*thread);
+	return (1);
 }
 
-void	philo_printf(bool status, char *message, t_var *ph)
+int	get_time(int i)
 {
-	sem_wait(ph->info->msg);
-	printf("\033[32m%lld ms\t \033[0;37mPhilo [%d] %s\n", get_time() \
-	- ph->info->start_time, ph->thread_num + 1, message);
-	if (status == 1)
-		return ;
-	sem_post(ph->info->msg);
+	struct timeval	current;
+	int				current_real_time;
+
+	gettimeofday(&current, 0);
+	current_real_time = ((current.tv_sec * 1000 + current.tv_usec / 1000) - i);
+	return (current_real_time);
+}
+
+void	philo_printf(int status, char *message, t_philo *ph)
+{
+	sem_wait(ph->mt);
+	status = get_time(ph->start);
+	printf("\033[32m%d ms\t \033[0;37mPhilo [%d] %s\n",
+		status, ph->thread_num, message);
+	if (!*ph->died)
+		sem_post(ph->mt);
 }

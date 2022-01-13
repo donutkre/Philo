@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 03:36:23 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:14:46 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:23:05 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,108 +23,102 @@
 	death in console log.
 */
 
-/*
-	If philo ate enough times. exit without sleep status.
-	Output done philo_eat message once each philo ate the required amount of times.
-*/
-
-int	philo_full(t_var *ph)
-{
-	if (ph->num_meal == ph->state->num_eat)
-		ph->state->all++;
-	if (ph->state->all == ph->state->n_ph)
-	{
-		philo_printf(TRUE, GREEN DONE, ph);
-		return (-1);
-	}
-	return (1);
-}
-
-/*
-	This function checks if philo will die during,
-	next round and inform next death time.
-	The simulation stops as soon as one philo dies.
-	Checks if any Philo die, return death message.
-	Check for death in a side-by-side thread.
-*/
-
-void	*check_status(void *var)
-{
-	t_var	*ph;
-
-	ph = (t_var *)var;
-	while (!ph->state->full)
-	{
-		pthread_mutex_lock(&(ph->mt));
-		if (get_time() - ph->start >= ph->state->t_die)
-		{
-			philo_printf(TRUE, RED DEAD, ph);
-			pthread_mutex_unlock(&(ph->mt));
-			return (0);
-		}
-		pthread_mutex_unlock(&(ph->mt));
-		usleep(1000);
-	}
-	return (0);
-}
-
 /* 
 	IMPORTANT: Function to clean up the memory
 	Free the address and destroy the mutex of the fork
 	Free the address amd destroy the mutex of the speak mutex
 	Free the struct itself 
 */
-void	clear_state(t_philo *state)
-{
-	int	i;
 
-	usleep(1000);
-	i = -1;
-	pthread_mutex_destroy(&state->m_speak);
-	while (++i < state->n_ph)
-		pthread_mutex_destroy(&state->m_fork[i]);
-	free(state->phil);
-	free(state->m_fork);
+int	clear_state(t_philo *state, int status)
+{
+	while (status > 0)
+	{
+		if (status == 1)
+			free(state);
+		if (status == 2)
+			pthread_mutex_destroy(state->mt);
+		if (status == 3)
+			free(state->m_fork);
+		if (status == 4)
+		{
+			while (state->n_ph--)
+				pthread_mutex_destroy(&state->m_fork[state->n_ph]);
+		}
+		status--;
+	}
+	return (0);
 }
 
 /* 
 	Check for the currect arguments 
 */
 
-int	init_params(t_philo *var, int argc, char *argv[])
+int	check_info(int argc, char *argv[])
 {
-	var->n_ph = ft_atoi(argv[1]);
-	var->t_die = ft_atoi(argv[2]);
-	var->t_eat = ft_atoi(argv[3]);
-	var->t_sleep = ft_atoi(argv[4]);
-	if (argv[5])
-		var->num_eat = ft_atoi(argv[5]);
-	if ((var->n_ph < 0 || var->n_ph >= 200 || var->t_die < 60
-			|| var->t_eat < 60 || var->t_sleep < 60)
-		|| (argc == 6 && var->num_eat < 0))
-		return (0);
+	if (argc < 5 || argc > 6)
+		return (ft_putendl_fd(RED"Error : bad arguments.\n", 2));
+	if (ft_atoi(argv[1]) <= 0 || ft_atoi(argv[1]) > 200)
+		return (ft_putendl_fd(RED"Error : Wrong number of philosopher\n", 2));
+	if (ft_atoi(argv[2]) < 60)
+		return (ft_putendl_fd(RED"Error : Wrong number : time to die\n", 2));
+	if (ft_atoi(argv[3]) < 60)
+		return (ft_putendl_fd(RED"Error : Wrong number : time to eat\n", 2));
+	if (ft_atoi(argv[4]) < 60)
+		return (ft_putendl_fd(RED"Error : Wrong number : time to sleep\n", 2));
+	if (argc == 6 && ft_atoi(argv[5]) <= 0)
+		return (ft_putendl_fd(RED"Error : Wrong number of meals\n", 2));
 	return (1);
 }
 
-/*
-	Main program will check error parsing then start threads
-*/
+/**
+    INITIALIZATION OF PHILOSOPHERS
+    assign initial values ​​to the variables of the philosopher's object;
+	When ph[i].num_meal = 0 all philos ate required amount of time.
+**/
+
+void	init_params(int argc, char *argv[], t_philo *ph)
+{
+	int	i;
+
+	i = -1;
+	while (++i < ft_atoi(argv[1]))
+	{
+		ph[i].start_philo = get_time(0);
+		ph[i].num_meal = 0;
+		ph[i].thread_num = i + 1;
+		ph[i].n_ph = ft_atoi(argv[1]);
+		ph[i].t_die = ft_atoi(argv[2]);
+		ph[i].t_eat = ft_atoi(argv[3]);
+		ph[i].t_sleep = ft_atoi(argv[4]);
+		if (argc == 6)
+			ph[i].num_eat = ft_atoi(argv[5]);
+		else
+			ph[i].num_eat = -1;
+		ph[i].right = ph[i].thread_num - 1;
+		ph[i].left = ph[i].thread_num % ph[i].n_ph;
+	}
+}
 
 int	main(int argc, char *argv[])
 {
-	t_philo	var;
+	t_philo	*philo;
+	int		phi;
+	int		died;
+	int		full;
 
-	memset(&var, 0, sizeof(t_philo));
-	if (argc < 5 || argc > 6)
-		return (printf("\e[91mIncorrect arguments, please input 5 or 6.\n"));
-	if (init_params(&var, argc, argv) == 0)
-	{
-		printf("\e[91mIncorrect argc\n");
+	philo = malloc(sizeof(t_philo) * ft_atoi(argv[1]));
+	if (!philo)
 		return (1);
-	}
-	if (process_philo(&var) < 0)
-		return (printf("\e[91mMalloc error\n"));
-	philo_start_threads(&var);
-	clear_state(&var);
+	if (check_info(argc, argv) < 0)
+		return (1);
+	init_params(argc, argv, philo);
+	if (!philo)
+		return (1);
+	check_end(philo, &died, &full);
+	phi = main_process(philo);
+	clear_state(philo, phi);
+	if (phi)
+		return (1);
 	return (0);
 }

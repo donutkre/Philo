@@ -6,23 +6,21 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 03:49:21 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:18:58 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:21:43 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-/* 
-	Calculated in millisec
-	1ms = 1000us (microseconds, usleep) 
-*/
-
-int	get_time(void)
+int	get_time(int i)
 {
 	struct timeval	current;
+	int				current_real_time;
 
-	gettimeofday(&current, NULL);
-	return ((int)(((current.tv_sec) * 1000) + ((current.tv_usec) / 1000)));
+	gettimeofday(&current, 0);
+	current_real_time = (current.tv_sec * 1000 + current.tv_usec / 1000);
+	current_real_time -= i;
+	return (current_real_time);
 }
 
 /*
@@ -31,19 +29,16 @@ int	get_time(void)
 	Attempt lock and unlock function here
 */
 
-void	philo_printf(bool status, char *message, t_var *ph)
+void	philo_printf(int status, char *message, t_philo *ph)
 {
-	pthread_mutex_lock(&ph->state->m_speak);
-	if (ph->state->full)
+	pthread_mutex_lock(ph->mt);
+	if (*ph->died)
 	{
-		pthread_mutex_unlock(&ph->state->m_speak);
+		pthread_mutex_unlock(ph->mt);
 		return ;
 	}
-	printf("\033[32m%d ms\t \033[0;37mPhilo [%d] %s\n", get_time() \
-	- ph->state->time, ph->thread_num + 1, message);
-	if (status)
-	{
-		ph->state->full = 1;
-	}
-	pthread_mutex_unlock(&ph->state->m_speak);
+	status = get_time(ph->start_philo);
+	printf("\033[32m%d ms\t \033[0;37mPhilo [%d] %s\n",
+		status, ph->thread_num, message);
+	pthread_mutex_unlock(ph->mt);
 }

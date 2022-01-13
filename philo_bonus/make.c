@@ -6,50 +6,32 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/26 21:53:51 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/03 20:16:19 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 01:00:20 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	process_philo(t_philo *var)
+void	*pre_start_thread(void *arg)
 {
-	char	semaphore[255];
 	int		i;
+	int		forks;
+	t_philo	*ph;
 
+	ph = (t_philo *)arg;
+	forks = fork();
+	if (forks != 0)
+		return (0);
 	i = 0;
-	philo_sem(var);
-	while (i < var->n_ph)
+	while (i < ph->n_ph)
 	{
-		var->phil[i].info = var;
-		var->phil[i].thread_num = i;
-		var->phil[i].countime_to_eat = 0;
-		var->phil[i].left = (i + 1) % var->n_ph;
-		var->phil[i].right = i;
-		var->phil[i].param = 1;
-		ft_strncpy("philosopher", semaphore, i);
-		sem_unlink(semaphore);
-		var->phil[i].mt = sem_open(semaphore, O_CREAT, 0660, 1);
-		ft_strncpy("start", semaphore, i);
-		sem_unlink(semaphore);
-		var->phil[i].mtime_to_eat = sem_open(semaphore, O_CREAT, 0660, 1);
+		forks = fork();
+		if (forks != 0)
+		{
+			routine(&ph[i]);
+			break ;
+		}
 		i++;
 	}
 	return (0);
-}
-
-int	philo_sem(t_philo *var)
-{
-	sem_unlink("fork");
-	sem_unlink("end");
-	sem_unlink("stop");
-	sem_unlink("times");
-	var->fork = sem_open("fork", O_CREAT, 0660, var->n_ph);
-	var->end = sem_open("end", O_CREAT, 0660, 0);
-	var->msg = sem_open("stop", O_CREAT, 0660, 1);
-	var->lock = sem_open("times", O_CREAT, 0660, 0);
-	var->phil = (t_var *)malloc(sizeof(*(var->phil)) * var->n_ph);
-	if (!var->phil)
-		return (-1);
-	return (1);
 }
