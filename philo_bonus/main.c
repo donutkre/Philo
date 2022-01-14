@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:14:57 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 01:00:08 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 09:36:07 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,16 @@
    Semaphore:
    When a philo (thread) start, semaphore value decrease.
 **/
+
+
+/*
+	get_time(ph->start) - ph->num_meal > ph->t_die
+	from the current time we subtract the timestamp at the moment of the last
+	eating thus getting the amount of time that the philosopher
+	remained without food and then compare with the input parameter of the valid
+	time to death; if the elapsed time without food is more than indicated
+	in the argument, then we end the program
+*/
 
 #include "philo.h"
 
@@ -54,6 +64,10 @@ int	check_info(int argc, char *argv[])
 		return (ft_putendl_fd(RED"Error : Wrong number of meals\n", 2));
 	return (1);
 }
+
+/*
+	STORING ARGUMENTS TO VARIABLES AND CALLING INITIALIZING FUNCTIONS
+*/
 
 t_philo	*init_params(int argc, char *argv[], t_philo *ph, int *status)
 {

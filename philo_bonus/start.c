@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:15:12 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 01:01:00 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 09:48:08 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,12 @@ void	philo_full(t_philo *ph)
 	}
 }
 
+/*
+	CLEANING FUNCTION
+	closing semaphores
+	clearing allocated memory
+*/
+
 int	clear_state(t_philo *ph)
 {
 	sem_close(ph->m_fork);
@@ -52,6 +58,15 @@ int	clear_state(t_philo *ph)
 	return (0);
 }
 
+/*
+** WAITING FOR DELETE PROCESSES
+** wait for child processes to terminate
+** if status != 3, then none of the philosophers died, in this case philo is full
+** through the kill() call, we send a SIGKILL signal to kill the process to each
+** from processes;
+** clear the reference structure;
+*/
+
 int	philo_start_threads(t_philo *ph)
 {
 	pthread_t	start;
@@ -65,7 +80,7 @@ int	philo_start_threads(t_philo *ph)
 	philo_full(ph);
 	pthread_join(done, 0);
 	clear_state(ph);
-	kill(0, 2);
+	kill(0, SIGKILL);
 	return (0);
 }
 
@@ -74,6 +89,16 @@ sem_t	*ft_sem_open(char *name, int num)
 	sem_unlink(name);
 	return (sem_open(name, O_CREAT | O_EXCL, 0660, num));
 }
+
+/*
+	INITIALIZATION OF PHILOSOPHERS
+	assign initial values ​​to the variables of the philosopher's object;
+	create NAMED semaphores with the sem_open() function (using the same
+	function can access already existing named semaphore),
+	semaphore m_fork we give the initial value equal to the number of philosophers;
+	The write semaphore controls access to the philosopher's status output;
+	The dead semaphore controls access to the death check;
+*/
 
 int	philo_sem(t_philo *ph)
 {

@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 03:38:39 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 01:31:14 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 09:28:54 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,14 +31,11 @@ void	death_message(int s, int philo, char *message, t_philo *ph)
 	Checks if any Philo die, return death message.
 	Check for death in a side-by-side thread.
 	Also checks if philo ate enough times. if yes, exit.
-
-
 	get_time(ph->start_philo) - ph[i].num_meal
 	from the current time we subtract the timestamp at the moment of the last
 	eating thus getting the amount of time that the philosopher
 	remained without food and then compare with the input parameter of the valid
-	time to death; if the elapsed time without food is more than indicated
-	in the argument, then we end the program
+    if the elapsed time without food is more than indicated
 */
 
 void	check_status(t_philo *ph)
@@ -69,12 +66,13 @@ void	check_status(t_philo *ph)
 	}
 }
 
-/*** declare an array of structures-references to structures, allocate memory;
-	initiate program time (get_time());
-	in the first loop, we assign values ​​to each of the reference structures;
-	in the same place we create threads (pthread_create) with access to the life function;
-	in the second loop, we wait for the completion of threads using the pthread_join function;
-	Create the philo here.
+/*** 
+	allocate memory for the threads array
+  	declare an array of structures-references to structures, allocate memory
+	in the loop, we assign values ​​to each of the reference structures
+	in the same place we create threads (pthread_create) with access to the routine function
+	we wait for the completion of threads using the pthread_join function
+	Create the philo here
 	philo_start_threads will launch each philo's thread and join em.
 	Checks if philo has died or has eaten enough time, if yes, display output.
 */

@@ -6,22 +6,17 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 09:52:15 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 01:31:44 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 09:26:54 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 /* 
 	Attempt lock function here.
-	the last philosopher (with id equal to the given number of philosophers),
 	raises the right fork first, while the rest of the philosophers raise
 	Only one philo can run the process in lock
-	Philo will take his 2 forks if available and start philo_eat.
+	Philo will take his 2 forks if available and start philo_think.
 	Output a message for each fork taken and when he starts to eat.
-	Pauses the thread for 1000 ms.
-	Count and update the last time Philosopher ate.
-	blocking the eating process with the table_manager mutex,
-	so that only one philosopher has access to the process;
  */
 
 void	take_fork(t_philo *ph)
@@ -42,8 +37,6 @@ int	philo_think(t_philo *ph)
 }
 
 /*
-	Take their right fork, no one will be able to eat,
-	and they will all die.
 	If there is no max round declared,
 	the while loop will be in infinite loop (eat, sleep, think)
 	reset the time of the last meal (get_time());
@@ -72,6 +65,15 @@ int	philo_sleep(t_philo *ph)
 	return (0);
 }
 
+/*
+	print philo eat status
+	Count and update the last time Philosopher ate.
+	so that only one philosopher has access to the process;
+
+	in each iteration we compare the variables t_eat and num_meal,
+	if they are equal, then we interrupt the cycle - the philosopher ate a given number of times;
+*/
+
 int	philo_eat(t_philo *ph)
 {
 	ph->num_meal = get_time(ph->start_philo);
@@ -87,17 +89,11 @@ int	philo_eat(t_philo *ph)
 }
 
 /*
-** THE LIFE CYCLE OF A PHILOSOPHER
-** in deadly_counter we initiate the counting of time before the loop
-** and reset the counter in the loop every time after eating,
-** then check the value of the counter in the death_check function;
-** in each iteration we compare the variables eat_counter and time_must_eat,
-** if they are equal, then we interrupt the cycle - the philosopher ate a given number of times;
-** after the loop is completed, increment the stop_eating counter in
-** each thread (philosopher), after which we compare with the number of philosophers,
-** if the values ​​are equal, then all philosophers ate a given number of times,
-** print "stop eting" and end the program;
-**	// link->p->limit = link->p->deadly_timestamp  + link->d->time_to_die;
+	Runs through the philo routine.
+	After the loop is completed, increment the ph->full counter in
+	each thread (philo), after which we compare with the number of philo,
+	if the values ​​are equal, then all philo ate a given number of times,
+	and reset the counter in the loop every time after eating,
 */
 
 void	*routine(void *arg)
