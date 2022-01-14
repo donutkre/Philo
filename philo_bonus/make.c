@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philo.h"
+#include "philo_bonus.h"
 
 /*
 ** CREATING PROCESSES
@@ -67,6 +67,6 @@ int	philo_start_threads(t_philo *ph)
 	philo_full(ph);
 	pthread_join(done, 0);
 	clear_state(ph);
-	kill(0, SIGKILL);
+	kill(0, 2);
 	return (0);
 }

@@ -19,7 +19,7 @@
 void	death_message(int s, int philo, char *message, t_philo *ph)
 {
 	s = get_time(ph->start_philo);
-	printf("\033[32m%d ms\t \033[0;37mPhilo [%d] %s\n",
+	printf("\033[32m%d\033[0;37m %d %s\n",
 		s, philo, message);
 	pthread_mutex_unlock(ph->mt);
 }

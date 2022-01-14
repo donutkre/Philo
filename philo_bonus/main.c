@@ -24,7 +24,7 @@
 	in the argument, then we end the program
 */
 
-#include "philo.h"
+#include "philo_bonus.h"
 
 void	*check_status(void *arg)
 {

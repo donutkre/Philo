@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philo.h"
+#include "philo_bonus.h"
 
 int	thread_create_detach(pthread_t *thread, void *func, void *arg)
 {
@@ -34,7 +34,7 @@ void	philo_printf(int status, char *message, t_philo *ph)
 {
 	sem_wait(ph->mt);
 	status = get_time(ph->start);
-	printf("\033[32m%d ms\t \033[0;37mPhilo [%d] %s\n",
+	printf("\033[32m %d \033[0;37m%d %s\n",
 		status, ph->thread_num, message);
 	if (!*ph->died)
 		sem_post(ph->mt);

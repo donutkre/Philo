@@ -38,7 +38,7 @@ void	philo_printf(int status, char *message, t_philo *ph)
 		return ;
 	}
 	status = get_time(ph->start_philo);
-	printf("\033[32m%d ms\t \033[0;37mPhilo [%d] %s\n",
+	printf("\033[32m%d\033[0;37m %d %s\n",
 		status, ph->thread_num, message);
 	pthread_mutex_unlock(ph->mt);
 }
