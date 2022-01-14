@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 03:38:39 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 09:28:54 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 11:25:41 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,8 @@ void	check_status(t_philo *ph)
 	allocate memory for the threads array
   	declare an array of structures-references to structures, allocate memory
 	in the loop, we assign values ​​to each of the reference structures
-	in the same place we create threads (pthread_create) with access to the routine function
+	in the same place we create threads (pthread_create) with access to
+	the routine function
 	we wait for the completion of threads using the pthread_join function
 	Create the philo here
 	philo_start_threads will launch each philo's thread and join em.

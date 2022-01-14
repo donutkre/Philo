@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:15:12 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 09:48:08 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 11:24:02 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,32 +55,6 @@ int	clear_state(t_philo *ph)
 	sem_unlink("finished");
 	sem_unlink("dead");
 	free(ph);
-	return (0);
-}
-
-/*
-** WAITING FOR DELETE PROCESSES
-** wait for child processes to terminate
-** if status != 3, then none of the philosophers died, in this case philo is full
-** through the kill() call, we send a SIGKILL signal to kill the process to each
-** from processes;
-** clear the reference structure;
-*/
-
-int	philo_start_threads(t_philo *ph)
-{
-	pthread_t	start;
-	pthread_t	done;
-
-	if (pthread_create(&start, 0, &pre_start_thread, ph))
-		return (clear_state(ph));
-	pthread_join(start, 0);
-	if (pthread_create(&done, 0, &philo_full_check, ph))
-		return (clear_state(ph));
-	philo_full(ph);
-	pthread_join(done, 0);
-	clear_state(ph);
-	kill(0, SIGKILL);
 	return (0);
 }
 

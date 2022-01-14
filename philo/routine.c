@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 09:52:15 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 09:26:54 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 11:25:21 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,8 @@ int	philo_sleep(t_philo *ph)
 	so that only one philosopher has access to the process;
 
 	in each iteration we compare the variables t_eat and num_meal,
-	if they are equal, then we interrupt the cycle - the philosopher ate a given number of times;
+	if they are equal, then we interrupt the cycle - the philosopher
+	ate a given number of times;
 */
 
 int	philo_eat(t_philo *ph)

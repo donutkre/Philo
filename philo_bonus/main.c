@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:14:57 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 09:36:07 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 11:24:57 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
    Semaphore:
    When a philo (thread) start, semaphore value decrease.
 **/
-
 
 /*
 	get_time(ph->start) - ph->num_meal > ph->t_die
