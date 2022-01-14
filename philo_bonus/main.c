@@ -6,7 +6,7 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 22:14:57 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 11:24:57 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 12:09:43 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,10 +97,6 @@ t_philo	*create_philo(int argc, char *argv[], int *died)
 	ph = malloc(sizeof(t_philo) * ft_atoi(argv[1]));
 	if (!ph)
 		return (0);
-	// sem_unlink("m_fork");
-	// sem_unlink("write");
-	// sem_unlink("finished");
-	// sem_unlink("dead");
 	ph = init_params(argc, argv, ph, died);
 	return (ph);
 }

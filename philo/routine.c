@@ -6,11 +6,12 @@
 /*   By: ktiong <ktiong@student.42kl.edu.my>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/28 09:52:15 by ktiong            #+#    #+#             */
-/*   Updated: 2022/01/14 11:25:21 by ktiong           ###   ########.fr       */
+/*   Updated: 2022/01/14 12:09:58 by ktiong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
 /* 
 	Attempt lock function here.
 	raises the right fork first, while the rest of the philosophers raise
